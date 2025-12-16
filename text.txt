@@ -1,0 +1,772 @@
+--Chapter 1 Function Encapsulation
+
+--1.1 calculate CRC16
+--@data : t, data to be verified
+--@n    : number of verified
+--@return : check result
+function add_crc16(start, n, data)
+    local carry_flag, a = 0
+    local result = 0xffff
+    local i = start
+    while(true )
+    do
+        result = result ~ data[i]
+        for j = 0, 7
+        do
+            a = result
+            carry_flag = a & 0x0001
+            result = result >> 1
+            if carry_flag == 1
+            then
+                 result = result ~ 0xa001
+            end
+        end
+        i = i + 1
+        if i == start + n
+        then
+            break
+        end
+    end
+    return result
+end
+--CRC函数结束
+--1.2 Displays the current screen ID
+function my_uartsend_screen(screenid)
+    local crc16 = 0		
+    local lamp_state_notify = {}
+
+    lamp_state_notify[0]  = 0xEE
+
+    lamp_state_notify[1]  = 0xB1
+    lamp_state_notify[2]  = 0x01
+
+    lamp_state_notify[3]  = (screenid >> 8) & 0xFF
+    lamp_state_notify[4] = screenid & 0xFF
+
+    crc16 = add_crc16(1, 4, lamp_state_notify)
+
+    lamp_state_notify[5] = (crc16 >> 8) & 0xFF
+    lamp_state_notify[6] = crc16 & 0xFF
+    lamp_state_notify[7] = 0xFF
+    lamp_state_notify[8] = 0xFC	
+	lamp_state_notify[9] = 0xFF
+    lamp_state_notify[10] = 0xFF		
+
+    uart_send_data(lamp_state_notify) 
+end 
+--画面ID函数结束
+
+--1.3 Select language
+--wdata ：Custom language datasets
+local wdata = {}
+function language_change()
+
+--语言切换函数 使用了画面0的11号控件作为wdata内容的显示和存储
+ if get_text(0,11) == "0"  then 
+--画面0
+set_text(0,51,"确定")set_text(0,52,"返回")set_text(0,1,"污染度传感器选择") set_text(0,2,"粘度传感器选择") set_text(0,3,"酸值传感器选择") set_text(0,4,"水分传感器选择") set_value(0,13,0)set_visiable(0,111,1)set_visiable(0,121,0)set_visiable(0,112,1)set_visiable(0,122,0)set_visiable(0,113,1)set_visiable(0,123,0)set_visiable(0,114,1)set_visiable(0,124,0)
+--画面1
+set_text(1,52,"返回")set_text(1,61,"查看更多")set_text(1,8,"(个/")
+--画面2
+set_text(2,206,"壳牌（中国）有限公司")set_text(2,207,"010-65295459")set_text(2,8,"设备名称")set_text(2,9,"设备型号")set_text(2,10,"设备序列")set_text(2,11,"软件版本")set_text(2,12,"硬件版本")set_text(2,13,"生产厂商")set_text(2,14,"联系电话")set_text(2,71,"实时监测")set_text(2,72,"系统信息")set_text(2,73,"厂商设置")set_text(2,74,"历史信息")
+--画面3
+set_text(3,4,"请输入密码")set_text(3,3,"密码错误请重新输入")set_text(3,71,"实时监测")set_text(3,72,"系统信息")set_text(3,73,"厂商设置")set_text(3,74,"历史信息")
+--画面4
+set_text(4,71,"实时监测")set_text(4,72,"系统信息")set_text(4,73,"厂商设置")set_text(4,74,"历史信息")set_text(4,75,"校准设置")set_text(4,76,"语言选择")set_text(4,77,"参数设置")set_text(4,78,"设备状态")set_text(4,79,"检测介质设置")set_text(4,80,"当前工作模式")
+set_visiable(4,102,0)set_visiable(4,103,1)
+--画面5
+set_text(5,1,"校验")set_text(5,2,"波特率")set_text(5,3,"停止位")set_text(5,4,"地址")set_text(5,5,"通讯模式切换")set_text(5,6,"本地通讯参数设置")set_text(5,52,"返回")
+--画面6
+set_text(6,16,"污染度详情参数")set_text(6,1,"气泡总数")set_text(6,2,"切削磨损颗粒")set_text(6,3,"切削磨损占比")set_text(6,4,"滑动磨损颗粒")set_text(6,5,"滑动磨损占比")set_text(6,6,"疲劳磨损颗粒")set_text(6,7,"疲劳磨损占比")set_text(6,8,"纤维")set_text(6,9,"纤维占比")set_text(6,10,"空气")set_text(6,11,"空气占比")set_text(6,12,"其他磨损")set_text(6,13,"其他占比")set_text(6,14,"油液老化程度")
+--画面7
+set_text(7,5,"滤油机参数设置")set_text(7,1,"滤油机型号选择")set_text(7,2,"滤油机设备状态")set_text(7,3,"设备启停")set_text(7,6,"水活性启动值（≥）")set_text(7,7,"污染度启动值（≥）")set_text(7,8,"水活性停止值（＜）")set_text(7,9,"污染度停止值（＜）")set_text(7,16,"注意：停止值要小于启动值！！")set_text(7,17,"   ")set_text(7,51,"确定")set_text(7,52,"返回")set_visiable(7,111,1)set_visiable(7,112,0)set_visiable(7,121,1)set_visiable(7,122,0)
+--画面8
+set_text(8,2,"时间校准")set_text(8,51,"确定")
+--画面9
+set_text(9,2,"标定参数设置")set_text(9,3,"微水标定")set_text(9,4,"介电常数标定")set_text(9,5,"粘度标定")set_text(9,6,"污染度标定")set_text(9,7,"液位标定")set_text(9,8,"电阻率标定")set_text(9,52,"返回")
+--画面10
+set_text(10,2,"设置设备Ser.No")set_text(10,3,"当前物料编码")set_text(10,4,"修改物料编码")set_text(10,9,"物料编码设置")set_text(10,51,"确定")set_text(10,52,"返回")
+--画面11
+set_text(11,1,"酸值标定系数A")set_text(11,2,"酸值标定系数B")set_text(11,3,"酸值标定系数C")set_text(11,4,"酸值标定系数D")set_text(11,9,"酸值标定系数设置")set_text(11,51,"确定")set_text(11,52,"返回")
+--画面12
+set_text(12,1,"参数设置")set_text(12,2,"水活性预警值")set_text(12,3,"水活性报警值")set_text(12,4,"水含量预警值")set_text(12,5,"水含量报警值")set_text(12,6,"污染度等级预警值")set_text(12,7,"污染度等级报警值")set_text(12,8,"粘度变化率预警值")set_text(12,9,"粘度变化率报警值")set_text(12,10,"介电常数预警值")set_text(12,11,"介电常数报警值")set_text(12,18,"本地通讯设置")set_text(12,19,"滤油机参数设置")set_text(12,51,"确定")set_text(12,52,"返回")
+--画面13
+set_text(13,1,"电阻率标定系数设置")set_text(13,2,"电阻率标定系数A")set_text(13,3,"电阻率标定系数B")set_text(13,4,"电阻率标定系数C")set_text(13,5,"电阻率标定系数D")set_text(13,6,"电阻率温修系数A")set_text(13,7,"电阻率温修系数B")set_text(13,8,"电阻率温修系数C")set_text(13,9,"电阻率温修系数D")set_text(13,51,"确定")set_text(13,52,"返回")
+ --画面14
+ set_text(14,2,"油品选择") set_text(14,4,"油品厂家") set_text(14,5,"油品系列") set_text(14,6,"油品型号") set_text(14,7,"自定义新油品") set_text(14,51,"确定") set_text(14,52,"返回")
+ --画面15
+ set_visiable(15,103,1)set_visiable(15,113,0)set_visiable(15,3,1)set_visiable(15,6,0)set_visiable(15,310,1)set_visiable(15,330,0) set_visiable(15,110,1) set_visiable(15,109,0) set_visiable(15,3,1) set_visiable(15,6,0) set_text(15,52,"返回")set_text(15,7,"详情")set_text(15,10,"当前阶段:")set_text(15,41,"介质选择")set_text(15,42,"参数设置")set_text(15,43,"调试打印")set_text(15,71,"实时监测")set_text(15,72,"系统信息")set_text(15,73,"厂商设置")set_text(15,74,"历史信息")
+ --画面16
+ set_text(16,1,"取样模式") set_text(16,52,"返回") set_text(16,53,"开始取样") set_text(16,54,"结束取样") 
+ --画面17
+ set_text(17,35,"报警参数设置") set_text(17,36,"异常报警参数设置")set_text(17,12,"设备倾角X轴值≥") set_text(17,13,"设备倾角Y轴值≥")set_text(17,14,"环境温度上限值≥")set_text(17,15,"环境温度下限值≤")set_text(17,16,"振动值≥")set_text(17,19,"粘度变化率预警值≥")set_text(17,20,"粘度变化率报警值")set_text(17,21,"缓冲池液位值≥")set_text(17,22,"缓冲池液位值≤")set_text(17,23,"水活性预警值≥")set_text(17,24,"水活性报警值≥")set_text(17,25,"水含量预警值≥")set_text(17,26,"水含量报警值≥")set_text(17,29,"进口压力值≥")set_text(17,27,"污染度等级预警值≥")set_text(17,28,"污染度等级报警值≥")set_text(17,32,"介电常数预警值≥")set_text(17,33,"介电常数报警值≥")set_text(17,51,"确定")set_text(17,52,"返回")
+ --画面18
+ set_text(18,1,"报警参数")set_text(18,2,"标定参数")set_text(18,3,"流程参数")set_text(18,4,"缓冲池温度参数")set_text(18,5,"缓冲池标定参数")set_text(18,6,"缓冲池液位参数")set_text(18,7,"本地通讯设置")set_text(18,8,"传感器选择")set_text(18,52,"返回")
+ --画面19
+ set_text(19,9,"污染度阈值电压参数设置") set_text(19,1,"污染度一通道阈值电压系数")set_text(19,2,"污染度二通道阈值电压系数")set_text(19,3,"污染度三通道阈值电压系数")set_text(19,4,"污染度四通道阈值电压系数")set_text(19,5,"污染度五通道阈值电压系数")set_text(19,6,"污染度六通道阈值电压系数")set_text(19,7,"污染度七通道阈值电压系数")set_text(19,8,"污染度八通道阈值电压系数")set_text(19,10,"标定系数设置")set_text(19,51,"确定")set_text(19,52,"返回")
+ --画面20
+ set_text(20,1,"介电常数标定系数A")set_text(20,2,"介电常数标定系数B")set_text(20,3,"介电常数标定系数设置")set_text(20,51,"确定")set_text(20,52,"返回")
+ --画面21
+ set_text(21,10,"水分标定系数设置")set_text(21,1,"水分标定系数A")set_text(21,2,"水分标定系数B")set_text(21,3,"水分标定系数C")set_text(21,4,"水分标定系数D")set_text(21,51,"确定")set_text(21,52,"返回")
+ --画面22
+ set_text(22,9,"阈值电压设置")set_text(22,1,"污染度一通道标定系数")set_text(22,2,"污染度二通道标定系数")set_text(22,3,"污染度三通道标定系数")set_text(22,4,"污染度四通道标定系数")set_text(22,5,"污染度五通道标定系数")set_text(22,6,"污染度六通道标定系数")set_text(22,7,"污染度全通道标定系数")set_text(22,8,"污染度标定系数设置")set_text(22,51,"确定")set_text(22,52,"返回")
+ --画面23
+ set_text(23,1,"缓冲池到达液位最长允许时间")set_text(23,2,"缓冲池到达加热温度最长允许时间")set_text(23,3,"污染度过饱和最长挂起时间")set_text(23,4,"缓冲池排油时间")set_text(23,5,"异常挂起时间")set_text(23,51,"确定")set_text(23,52,"返回")
+ --画面24
+ set_text(24,1,"缓冲池加热温度")set_text(24,2,"缓冲池加热上限")set_text(24,3,"缓冲池加热下限")set_text(24,4,"缓冲池加热时间")set_text(24,5,"加热控制A")set_text(24,6,"加热控制B")set_text(24,7,"加热控制C")set_text(24,8,"加热控制D")set_text(24,51,"确定")set_text(24,52,"返回")set_text(24,13,"缓冲池温度参数")
+ --画面25
+ set_text(25,13,"缓冲池液位参数")set_text(25,2,"缓冲池最低液位")set_text(25,1,"缓冲池最高液位")set_text(25,51,"确定")set_text(25,52,"返回")
+ --画面26
+ set_text(26,2,"推荐液位值（±5mm）")set_text(26,3,"实际液位值")set_text(26,4,"传感器电流值")set_text(26,5,"高液位值（120mm左右）")set_text(26,7,"中液位值（60mm左右）")set_text(26,8,"低液位值（10mm左右）")set_text(26,1,"开始校准")set_text(26,9,"当前液位斜率")set_text(26,10,"当前液位截距")set_text(26,51,"确定")set_text(26,52,"返回")
+ --画面28
+ set_text(28,1,"清洗模式") set_text(28,52,"返回") set_text(28,53,"开始取样") set_text(28,54,"结束取样") 
+ --画面29
+ set_text(29,2,"颗粒度检测流速")set_text(29,3,"设备排油流速")set_text(29,13,"流程参数") set_text(29,52,"返回") set_text(29,51,"确定")
+ --画面30
+ set_text(30,1,"粘度及介电常数详细参数")set_text(30,2,"40℃运动粘度")set_text(30,3,"动力粘度") set_text(30,4,"介电常数") set_text(30,5,"参考运动粘度") set_text(30,6,"温度") set_text(30,7,"密度")set_text(30,52,"返回") set_text(30,51,"确定")
+ --画面31
+ set_text(31,1,"粘度标定")set_text(31,34,"温度")set_text(31,35,"粘度参考值") set_text(31,36,"粘度标定值") set_text(31,24,"粘度标定系数A") set_text(31,25,"粘度标定系数B") set_text(31,26,"粘度标定系数C")set_text(31,27,"粘度标定系数D") set_text(31,28,"温度修正系数A") set_text(31,29,"温度修正系数B") set_text(31,32,"温度修正系数C")set_text(31,33,"温度修正系数D") set_text(31,14,"校准")set_text(31,51,"确定")set_text(31,52,"返回")set_visiable(31,102,1)set_visiable(31,103,0)
+ --画面32
+ set_text(32,2,"24h")set_text(32,5,"一周")set_text(32,6,"一月") set_text(32,7,"水含量") set_text(32,9,"水活性") set_text(32,10,"污染度") set_text(32,11,"粘度")set_text(32,12,"介电常数") set_text(32,13,"酸值") set_text(32,14,"电阻率") set_text(32,15,"查询")set_text(32,52,"返回") 
+ set_visiable(32,107,1) set_visiable(32,108,0)
+ --画面33
+ set_text(33,2,"24h")set_text(33,5,"一周")set_text(33,6,"一月") set_text(33,7,"水含量") set_text(33,9,"水活性") set_text(33,10,"污染度") set_text(33,11,"粘度")set_text(33,12,"介电常数") set_text(33,13,"酸值") set_text(33,14,"电阻率") set_text(33,15,"查询")set_text(33,52,"返回") 
+ set_visiable(33,107,1) set_visiable(33,108,0)
+ --画面34
+ set_text(34,2,"24h")set_text(34,5,"一周")set_text(34,6,"一月") set_text(34,7,"水含量") set_text(34,9,"水活性") set_text(34,10,"污染度") set_text(34,11,"粘度")set_text(34,12,"介电常数") set_text(34,13,"酸值") set_text(34,14,"电阻率") set_text(34,15,"查询")set_text(34,52,"返回") 
+ set_visiable(34,107,1) set_visiable(34,108,0)
+ --画面35 S03
+ set_text(35,81,"状态信息")set_text(35,71,"实时监测")set_text(35,72,"系统信息")set_text(35,73,"厂商设置")set_text(35,74,"历史信息")set_text(35,51,"水含量")set_text(35,52,"水活性")set_text(35,53,"污染度等级")set_text(35,54,"进油压力")set_text(35,6,"当前阶段") 
+ set_visiable(35,118,1) set_visiable(35,119,0)
+ set_visiable(35,121,1) set_visiable(35,122,1) set_visiable(35,123,1) set_visiable(35,124,1) set_visiable(35,125,1) 
+ set_visiable(35,131,0) set_visiable(35,132,0) set_visiable(35,133,0) set_visiable(35,134,0) set_visiable(35,135,0) 
+ --画面36 S04
+ set_text(36,81,"状态信息")set_text(36,71,"实时监测")set_text(36,72,"系统信息")set_text(36,73,"厂商设置")set_text(36,74,"历史信息")set_text(36,51,"水含量")set_text(36,52,"水活性")set_text(36,53,"污染度等级")set_text(36,54,"进油压力")set_text(36,55,"介电常数")set_text(36,56,"粘度")set_text(35,6,"当前阶段") 
+ set_visiable(36,118,1) set_visiable(36,119,0)
+ set_visiable(36,121,1) set_visiable(36,122,1) set_visiable(36,123,1) set_visiable(36,124,1) set_visiable(36,125,1) 
+ set_visiable(36,131,0) set_visiable(36,132,0) set_visiable(36,133,0) set_visiable(36,134,0) set_visiable(36,135,0) 
+ --画面37 酸值
+ set_text(37,81,"状态信息")set_text(37,71,"实时监测")set_text(37,72,"系统信息")set_text(37,73,"厂商设置")set_text(37,74,"历史信息")set_text(37,51,"水含量")set_text(37,52,"水活性")set_text(37,53,"污染度等级")set_text(37,54,"酸值")set_text(37,55,"介电常数")set_text(37,56,"粘度")set_text(37,6,"当前阶段") 
+ set_visiable(37,118,1) set_visiable(37,119,0)
+ set_visiable(37,121,1) set_visiable(37,122,1) set_visiable(37,123,1) set_visiable(37,124,1) set_visiable(37,125,1) 
+ set_visiable(37,131,0) set_visiable(37,132,0) set_visiable(37,133,0) set_visiable(37,134,0) set_visiable(37,135,0) 
+ --画面38 电阻率
+ set_text(38,81,"状态信息")set_text(38,71,"实时监测")set_text(38,72,"系统信息")set_text(38,73,"厂商设置")set_text(38,74,"历史信息")set_text(38,51,"水含量")set_text(38,52,"水活性")set_text(38,53,"污染度等级")set_text(38,54,"电阻率")set_text(38,55,"介电常数")set_text(38,56,"粘度")set_text(38,6,"当前阶段") 
+ set_visiable(38,118,1) set_visiable(38,119,0)
+ set_visiable(38,121,1) set_visiable(38,122,1) set_visiable(38,123,1) set_visiable(38,124,1) set_visiable(38,125,1) 
+ set_visiable(38,131,0) set_visiable(38,132,0) set_visiable(38,133,0) set_visiable(38,134,0) set_visiable(38,135,0) 
+ --画面39 图像法
+ set_text(39,81,"状态信息")set_text(39,71,"实时监测")set_text(39,72,"系统信息")set_text(39,73,"厂商设置")set_text(39,74,"历史信息")set_text(39,51,"水含量")set_text(39,52,"水活性")set_text(39,53,"污染度等级")set_text(39,54,"酸值")set_text(39,55,"介电常数")set_text(39,56,"粘度")set_text(39,6,"当前阶段") 
+ set_visiable(39,118,1) set_visiable(39,119,0)
+ set_visiable(39,121,1) set_visiable(39,122,1) set_visiable(39,123,1) set_visiable(39,124,1) set_visiable(39,125,1) 
+ set_visiable(39,131,0) set_visiable(39,132,0) set_visiable(39,133,0) set_visiable(39,134,0) set_visiable(39,135,0) 
+ --画面40 
+ set_visiable(40,1,1) set_visiable(40,2,0)set_text(40,51,"确定") set_text(40,52,"返回")
+ --画面41
+ set_text(41,52,"返回") set_text(41,3,"简体中文")set_value(41,13,0)	
+ --画面42
+ set_text(42,75,"时间校准")set_text(42,76,"触控校准")set_text(42,52,"返回")
+ elseif get_text(0,11) == "1" then
+ --画面0
+ set_text(0,51,"Confirm")set_text(0,52,"Return")set_text(0,1,"Cleanliness sensor selection") set_text(0,2,"Viscosity sensor selection") set_text(0,3,"Acidity sensor selection") set_text(0,4,"Moisture sensor selection") set_value(0,13,1)set_visiable(0,111,0)set_visiable(0,121,1)set_visiable(0,112,0)set_visiable(0,122,1)set_visiable(0,113,0)set_visiable(0,123,1)set_visiable(0,114,0)set_visiable(0,124,1)
+ --画面1
+ set_text(1,52,"Return")set_text(1,61,"More")set_text(1,8,"(Particle counts /")
+ --画面2
+set_text(2,206,"Shell (China) Limited")set_text(2,207,"010-65295459")set_text(2,8,"Name")set_text(2,9,"Model")set_text(2,10,"Ser.No")set_text(2,11,"Software")set_text(2,12,"Hardware")set_text(2,13,"Manufacture")set_text(2,14,"Contact")set_text(2,71,"Live data")set_text(2,72,"System info")set_text(2,73,"Settings")set_text(2,74,"Records")
+ --画面3
+ set_text(3,4,"Please enter the password")set_text(3,3,"The password is incorrect，plesase enter it again.")set_text(3,71,"Live data")set_text(3,72,"System info")set_text(3,73,"Settings")set_text(3,74,"Records")
+ --画面4
+ set_text(4,71,"Live data")set_text(4,72,"System info")set_text(4,73,"Settings")set_text(4,74,"Records")set_text(4,75,"Calibration")set_text(4,76,"Language")set_text(4,77,"Parameter Settings")set_text(4,78,"Equipment Status")set_text(4,79,"Medium Settings")set_text(4,80,"Working mode")
+set_visiable(4,102,1)set_visiable(4,103,0)
+ --画面5
+ set_text(5,1,"Verification")set_text(5,2,"Baud rate")set_text(5,3,"Stop position")set_text(5,4,"ID")set_text(5,5,"Communication mode")set_text(5,6,"Local communication settings")set_text(5,52,"Return")
+
+ --画面6
+ set_text(6,16,"Cleanliness parameters")set_text(6,1,"Bubble")set_text(6,2,"Cutting wear particles")set_text(6,3,"Cutting wear proportion")set_text(6,4,"Sliding wear particles")set_text(6,5,"Sliding wear proportion")set_text(6,6,"Fatigue wear particles")set_text(6,7,"Fatigue wear proportion")set_text(6,8,"Fiber")set_text(6,9,"Fiber proportion")set_text(6,10,"Air")set_text(6,11,"Air proportion")set_text(6,12,"Other")set_text(6,13,"Other proportion")set_text(6,14,"Degree of oil aging")
+ --画面7
+ set_text(7,5,"Oil filter setting")set_text(7,1,"Oil filter select")set_text(7,2,"Oil filter status")set_text(7,3,"Start or stop")set_text(7,6,"Water saturation start at（≥）")set_text(7,7,"Cleanliness class start at（≥）")set_text(7,8,"Water  saturation stop at（＜）")set_text(7,9,"Cleanliness class stop at（＜）")set_text(7,16,"Stop value should be lower than start value!!")set_text(7,17,"（both for Cleanliness and water saturation ） ")set_text(7,51,"Confirm")set_text(7,52,"Return") set_text(7,5,"Oil filter setting") set_visiable(7,111,0)set_visiable(7,112,1)set_visiable(7,121,0)set_visiable(7,122,1)
+ --画面8
+ set_text(8,2,"Time Calibration")set_text(8,51,"Confirm")
+ --画面9
+ set_text(9,2,"Calibration")set_text(9,3,"Water content")set_text(9,4,"Permittivity")set_text(9,5,"Viscosity")set_text(9,6,"Cleanliness")set_text(9,7,"Oil Level")set_text(9,8,"Resistivity")set_text(9,52,"Return")
+ --画面10
+ set_text(10,2,"Modify the serial number")set_text(10,3,"Current material code")set_text(10,4,"Modify the material code to")set_text(10,9,"Ser.No configuration")set_text(10,51,"confirm")set_text(10,52,"return")
+ --画面11
+ set_text(11,1,"Calibration coefficient A")set_text(11,2,"Calibration coefficient B")set_text(11,3,"Calibration coefficient C")set_text(11,4,"Calibration coefficient D")set_text(11,9,"Acidity calibration settings")set_text(11,51,"Confirm")set_text(11,52,"Return")
+ --画面12
+ set_text(12,1,"Parameter settings")set_text(12,2,"Water saturation warning")set_text(12,3,"Water saturation alarm")set_text(12,4,"Water content warning")set_text(12,5,"Water content alarm")set_text(12,6,"Cleanliness warning")set_text(12,7,"Cleanliness alarm")set_text(12,8,"Viscosity variation warning")set_text(12,9,"Viscosity variation alarm")set_text(12,10,"Permittivity warning")set_text(12,11,"Permittivity alarm")set_text(12,18,"local communication settings")set_text(12,19,"Oil fiter settings")set_text(12,51,"Confirm")set_text(12,52,"Return")
+ --画面13
+ set_text(13,1,"Resistivity calibration settings")set_text(13,2,"Resistivity coefficient A")set_text(13,3,"Resistivity coefficient B")set_text(13,4,"Resistivity coefficient C")set_text(13,5,"Resistivity coefficient D")set_text(13,6,"Temperature coefficient A")set_text(13,7,"Temperature coefficient B")set_text(13,8,"Temperature coefficient C")set_text(13,9,"Temperature coefficient D")set_text(13,51,"Confirm")set_text(13,52,"Return")
+ --画面14
+ set_text(14,2,"Medium Settings") set_text(14,4,"Oil manufacturers") set_text(14,5,"Oil series") set_text(14,6,"Oil model") set_text(14,7,"Customize new one") set_text(14,51,"Confirm") set_text(14,52,"Return")
+ --画面15
+ set_visiable(15,103,0)set_visiable(15,113,1)set_visiable(15,3,0)set_visiable(15,6,1)set_visiable(15,310,0) set_visiable(15,330,1) set_visiable(15,110,0) set_visiable(15,109,1) set_visiable(15,3,0) set_visiable(15,6,1)set_text(15,52,"Return")set_text(15,7,"Details")set_text(15,10,"Current phase :")set_text(15,41,"Medium settings")set_text(15,42,"Parameter settings")set_text(15,43,"Debug output")set_text(15,71,"Live data")set_text(15,72,"System info")set_text(15,73,"Settings")set_text(15,74,"Records")
+ --画面16
+ set_text(16,1,"Sampling mode") set_text(16,52,"Return") set_text(16,53,"Start") set_text(16,54,"End")
+ --画面17
+ set_text(17,35,"Alarm settings") set_text(17,36,"Abnormal alarm settings")set_text(17,12,"X-axis tilt angle≥") set_text(17,13,"Y-axis tilt angle≥")set_text(17,14,"Ambient TEMP≥")set_text(17,15,"Ambient TEMP≤")set_text(17,16,"Vibration≥")set_text(17,19,"Viscosity variation warning≥")set_text(17,20,"Viscosity variation alarm≥")set_text(17,21,"Pool oil level≥")set_text(17,22,"Pool oil level≤")set_text(17,23,"Water saturation warning≥")set_text(17,24,"Water saturation alarm≥")set_text(17,25,"Water content warning≥")set_text(17,26,"Water content alarm≥")set_text(17,29,"Import pressure≥")set_text(17,27,"Cleanliness warning ≥")set_text(17,28,"Cleanliness alarm≥")set_text(17,32,"Permittivity warning≥")set_text(17,33,"Permittivity alarm≥")set_text(17,51,"Confirm")set_text(17,52,"Return")
+ --画面18
+ set_text(18,1,"Alarm settings")set_text(18,2,"Calibration")set_text(18,3,"Process settings")set_text(18,4,"Pool temperature")set_text(18,5,"Level calibration")set_text(18,6,"Pool oil level ")set_text(18,7,"Local communication")set_text(18,8,"Sensor select")set_text(18,52,"Return")
+ --画面19
+ set_text(19,9,"Threshold voltage parameter") set_text(19,1,"Channel #1 thshold voltage")set_text(19,2,"Channel #2 thshold voltage")set_text(19,3,"Channel #3 thshold voltage")set_text(19,4,"Channel #4 thshold voltage")set_text(19,5,"Channel #5 thshold voltage")set_text(19,6,"Channel #6 thshold voltage")set_text(19,7,"Channel #7 thshold voltage")set_text(19,8,"Channel #8 thshold voltage")set_text(19,10,"Calibration coefficients")set_text(19,51,"Confirm")set_text(19,52,"Return")
+ --画面20
+ set_text(20,1,"Permittivity calibration coefficient A")set_text(20,2,"Permittivity calibration coefficient B")set_text(20,3,"Permittivity calibration coefficient settings")set_text(20,51,"Confirm")set_text(20,52,"Return")
+ --画面21
+ set_text(21,10,"Water content calibration coefficient settings")set_text(21,1,"Water content calibration coefficient A")set_text(21,2,"Water content calibration coefficient B")set_text(21,3,"Water content calibration coefficient C")set_text(21,4,"Water content calibration coefficient D")set_text(21,51,"Confirm")set_text(21,52,"Return")
+ --画面22
+ set_text(22,9,"Threshold voltage setting")set_text(22,1,"Channel #1 calibration coefficient")set_text(22,2,"Channel #2 calibration coefficient")set_text(22,3,"Channel #3 calibration coefficient")set_text(22,4,"Channel #4 calibration coefficient")set_text(22,5,"Channel #5 calibration coefficient")set_text(22,6,"Channel #6 calibration coefficient")set_text(22,7,"All channel calibration coefficient")set_text(22,8,"Cleanliness calibration coefficient settings")set_text(22,51,"Confirm")set_text(22,52,"Return")
+ --画面23
+ set_text(23,1,"Maximum allowable time for oil intake")set_text(23,2,"Maximum allowable time for heating")set_text(23,3,"Buffer time for excessive Cleanliness class")set_text(23,4,"Maximum allowable time for oil discharge")set_text(23,5,"Device abnormal buffering time")set_text(23,51,"Confirm")set_text(23,52,"Return")
+ --画面24
+ set_text(24,1,"Heating target TEMP")set_text(24,2,"Heating upper limit")set_text(24,3,"Heating lower limit")set_text(24,4,"Heating time")set_text(24,5,"Heating parameter A")set_text(24,6,"Heating parameter B")set_text(24,7,"Heating parameter C")set_text(24,8,"Heating parameter D")set_text(24,51,"Confirm")set_text(24,52,"Return")set_text(24,13,"Pool temperature settings")
+ --画面25
+ set_text(25,13,"Pool oil level")set_text(25,1,"Maximum oil level")set_text(25,2,"Minimum oil level")set_text(25,51,"Confirm")set_text(25,52,"Return")
+ --画面26
+ set_text(26,2,"Recommended oil level（±5mm）")set_text(26,3,"Actual oil level")set_text(26,4,"Sensor current")set_text(26,5,"High oil level（ard. 120mm）")set_text(26,7,"Medium oil level（ard. 60mm）")set_text(26,8,"Low oil level（ard. 10mm）")set_text(26,1,"Calibrate")set_text(26,9,"Oil level slope")set_text(26,10,"Oil level intercept")set_text(26,51,"Confirm")set_text(26,52,"Return")
+ --画面28
+ set_text(28,1,"Cleansing mode") set_text(28,52,"Return") set_text(28,53,"Start") set_text(28,54,"End") 
+ --画面29
+ set_text(29,2,"Monitoring flow rate")set_text(29,3,"Discharge flow rate") set_text(29,13,"Process settings")set_text(29,52,"Return") set_text(29,51,"Confirm")
+ --画面30
+ set_text(30,1,"Detailed parameters")set_text(30,2,"40℃ kinematic viscosity")set_text(30,3,"Dynamic viscosity") set_text(30,4,"Permittivity") set_text(30,5,"Reference Kinematic viscosity") set_text(30,6,"Temperature") set_text(30,7,"Density")set_text(30,52,"Return") set_text(30,51,"Confirm")
+ --画面31
+ set_text(31,1,"Viscosity calibration")set_text(31,34,"Temperture")set_text(31,35,"Reference viscosity") set_text(31,36,"Calibration viscosity") set_text(31,24,"Viscosity calibration A") set_text(31,25,"Viscosity calibration B") set_text(31,26,"Viscosity calibration C")set_text(31,27,"Viscosity calibration D") set_text(31,28,"TEMP correction factor A") set_text(31,29,"TEMP correction factor B") set_text(31,32,"TEMP correction factor C")set_text(31,33,"TEMP correction factor D") set_text(31,14,"Calibrate")set_text(31,51,"Confirm")set_text(31,52,"Return")set_visiable(31,102,0)set_visiable(31,103,1)
+ --画面32
+ set_text(32,2,"24h")set_text(32,5,"Week")set_text(32,6,"Month") set_text(32,7,"Water content") set_text(32,9,"Water saturation") set_text(32,10,"Cleanliness") set_text(32,11,"Viscosity")set_text(32,12,"Permittivity") set_text(32,13,"Acid") set_text(32,14,"Resistivity") set_text(32,15,"Inquire")set_text(32,52,"Return") 
+ set_visiable(32,107,0) set_visiable(32,108,1)set_value(32,108,get_value(32,107))
+ --画面33
+ set_text(33,2,"24h")set_text(33,5,"Week")set_text(33,6,"Month") set_text(33,7,"Water content") set_text(33,9,"Water saturation") set_text(33,10,"Cleanliness") set_text(33,11,"Viscosity")set_text(33,12,"Permittivity") set_text(33,13,"Acid") set_text(33,14,"Resistivity") set_text(33,15,"Inquire")set_text(33,52,"Return") 
+ set_visiable(33,107,0) set_visiable(33,108,1)set_value(33,108,get_value(33,107))
+ --画面34
+ set_text(34,2,"24h")set_text(34,5,"Week")set_text(34,6,"Month") set_text(34,7,"Water content") set_text(34,9,"Water saturation") set_text(34,10,"Cleanliness") set_text(34,11,"Viscosity")set_text(34,12,"Permittivity") set_text(34,13,"Acid") set_text(34,14,"Resistivity") set_text(34,15,"Inquire")set_text(34,52,"Return") 
+ set_visiable(34,107,0) set_visiable(34,108,1)set_value(34,108,get_value(34,107))
+ --画面35 S03
+ set_text(35,81,"Status information")set_text(35,71,"Live data")set_text(35,72,"System info")set_text(35,73,"Settings")set_text(35,74,"Records")set_text(35,51,"Water content")set_text(35,52,"Water saturation")set_text(35,53,"Cleanliness class")set_text(35,54,"Pressure")set_text(35,6,"Current stage")
+ set_visiable(35,118,0) set_visiable(35,119,1)
+ set_visiable(35,121,0) set_visiable(35,122,0) set_visiable(35,123,0) set_visiable(35,124,0) set_visiable(35,125,0) 
+ set_visiable(35,131,1) set_visiable(35,132,1) set_visiable(35,133,1) set_visiable(35,134,1) set_visiable(35,135,1) 
+ --画面36 S04
+ set_text(36,81,"Status information")set_text(36,71,"Live data")set_text(36,72,"System info")set_text(36,73,"Settings")set_text(36,74,"Records")set_text(36,51,"Water content")set_text(36,52,"Water saturation")set_text(36,53,"Cleanliness class")set_text(36,54,"Pressure")set_text(36,55,"Permittivity")set_text(36,56,"Viscosity")set_text(36,6,"Current stage") 
+ set_visiable(36,118,0) set_visiable(36,119,1)
+ set_visiable(36,121,0) set_visiable(36,122,0) set_visiable(36,123,0) set_visiable(36,124,0) set_visiable(36,125,0) 
+ set_visiable(36,131,1) set_visiable(36,132,1) set_visiable(36,133,1) set_visiable(36,134,1) set_visiable(36,135,1) 
+ --画面37 酸值
+ set_text(37,81,"Status information")set_text(37,71,"Live data")set_text(37,72,"System info")set_text(37,73,"Settings")set_text(37,74,"Records")set_text(37,51,"Water content")set_text(37,52,"Water saturation")set_text(37,53,"Cleanliness class")set_text(37,54,"Acid")set_text(37,55,"Permittivity")set_text(37,56,"Viscosity")set_text(37,6,"Current stage") 
+ set_visiable(37,118,0) set_visiable(37,119,1)
+ set_visiable(37,121,0) set_visiable(37,122,0) set_visiable(37,123,0) set_visiable(37,124,0) set_visiable(37,125,0) 
+ set_visiable(37,131,1) set_visiable(37,132,1) set_visiable(37,133,1) set_visiable(37,134,1) set_visiable(37,135,1) 
+ --画面38 电阻率
+ set_text(38,81,"Status information")set_text(38,71,"Live data")set_text(38,72,"System info")set_text(38,73,"Settings")set_text(38,74,"Records")set_text(38,51,"Water content")set_text(38,52,"Water saturation")set_text(38,53,"Cleanliness class")set_text(38,54,"Resistivity")set_text(38,55,"Permittivity")set_text(38,56,"Viscosity")set_text(38,6,"Current stage") 
+ set_visiable(38,118,0) set_visiable(38,119,1)
+ set_visiable(38,121,0) set_visiable(38,122,0) set_visiable(38,123,0) set_visiable(38,124,0) set_visiable(38,125,0) 
+ set_visiable(38,131,1) set_visiable(38,132,1) set_visiable(38,133,1) set_visiable(38,134,1) set_visiable(38,135,1) 
+ --画面39 图像法
+ set_text(39,81,"Status information")set_text(39,71,"Live data")set_text(39,72,"System info")set_text(39,73,"Settings")set_text(39,74,"Records")set_text(39,51,"Water content")set_text(39,52,"Water saturation")set_text(39,53,"Cleanliness class")set_text(39,54,"Acid")set_text(39,55,"Permittivity")set_text(39,56,"Viscosity")set_text(39,6,"Current stage") 
+ set_visiable(39,118,0) set_visiable(39,119,1)
+ set_visiable(39,121,0) set_visiable(39,122,0) set_visiable(39,123,0) set_visiable(39,124,0) set_visiable(39,125,0) 
+ set_visiable(39,131,1) set_visiable(39,132,1) set_visiable(39,133,1) set_visiable(39,134,1) set_visiable(39,135,1) 
+ --画面40 
+ set_visiable(40,1,0) set_visiable(40,2,1)set_text(40,51,"Confirm") set_text(40,52,"Return")
+ --画面41
+ set_text(41,52,"Return") set_text(41,3,"English")set_value(41,13,1)	
+ --画面42
+ set_text(42,75,"Time calibration")set_text(42,76,"Touch calibration")set_text(42,52,"Return")
+end
+end
+
+--语言切换函数结束
+--1.4 主界面显示函数
+local STD0 = {}
+local STD1 = {}
+local STD2 = {}
+local STD3 = {}
+local STD4 = {}
+local STD5 = {}
+local STD6 = {}
+local STD7 = {}
+function Mode_set()
+--STD8[0] = 12
+set_value(0,101,STD0[1]) set_value(0,102,STD0[2]) set_value(0,103,STD0[3]) set_value(0,104,STD0[4])                    --画面0的传感器选择
+set_text(0,14,STD0[1])
+set_visiable(4,301,STD1[1]) set_visiable(3,301,STD1[2]) set_visiable(2,301,STD1[3]) set_visiable(15,301,STD1[4])
+set_visiable(4,302,STD2[1]) set_visiable(3,302,STD2[2]) set_visiable(2,302,STD2[3]) set_visiable(15,302,STD2[4])
+set_visiable(4,303,STD3[1]) set_visiable(3,303,STD3[2]) set_visiable(2,303,STD3[3]) set_visiable(15,303,STD3[4])
+set_visiable(4,304,STD4[1]) set_visiable(3,304,STD4[2]) set_visiable(2,304,STD4[3]) set_visiable(15,304,STD4[4])
+set_visiable(4,305,STD5[1]) set_visiable(3,305,STD5[2]) set_visiable(2,305,STD5[3]) set_visiable(15,305,STD5[4])--画面4、3、2、15的实时监测图标设置
+
+set_visiable(32,303,STD6[1]) set_visiable(32,304,STD6[2]) set_visiable(32,306,STD6[3]) set_visiable(32,307,STD6[4])set_visiable(32,305,STD6[5]) set_visiable(32,308,STD6[6]) set_visiable(32,309,STD6[7])set_visiable(32,7,STD6[8]) set_visiable(32,9,STD6[9])set_visiable(32,11,STD6[10]) set_visiable(32,12,STD6[11]) set_visiable(32,13,STD6[12]) set_visiable(32,14,STD6[13]) 
+set_visiable(33,303,STD6[1]) set_visiable(33,304,STD6[2]) set_visiable(33,306,STD6[3]) set_visiable(33,307,STD6[4])set_visiable(33,305,STD6[5]) set_visiable(33,308,STD6[6]) set_visiable(33,309,STD6[7])set_visiable(33,7,STD6[8]) set_visiable(33,9,STD6[9])set_visiable(33,11,STD6[10]) set_visiable(33,12,STD6[11]) set_visiable(33,13,STD6[12]) set_visiable(33,14,STD6[13])
+set_visiable(34,303,STD6[1]) set_visiable(34,304,STD6[2]) set_visiable(34,306,STD6[3]) set_visiable(34,307,STD6[4])set_visiable(34,305,STD6[5]) set_visiable(34,308,STD6[6]) set_visiable(34,309,STD6[7])set_visiable(34,7,STD6[8]) set_visiable(34,9,STD6[9])set_visiable(34,11,STD6[10]) set_visiable(34,12,STD6[11]) set_visiable(34,13,STD6[12]) set_visiable(34,14,STD6[13])--历史曲线画面的图标控制
+set_visiable(12,8,STD7[1])set_visiable(12,9,STD7[2])set_visiable(12,10,STD7[3])set_visiable(12,11,STD7[4])set_visiable(12,16,STD7[5])set_visiable(12,17,STD7[6])set_visiable(12,207,STD7[7])set_visiable(12,208,STD7[8])set_visiable(12,209,STD7[9])set_visiable(12,210,STD7[10])--画面12的指标控制
+end
+--主界面选择函数结束
+
+--1.5 监测标准选择界面函数
+function Cleanliness_select()
+  if get_value(1,101) == 0 or get_value(1,101) == 2  then
+   set_text(1,201, "5~15")
+   set_text(1,202,"15~25")
+   set_text(1,203,"25~50") 
+   set_text(1,204,"50~100") 
+   set_text(1,205,">100") 
+   set_text(1,206,"/") 
+   set_text(1,7,"100mL)")
+   set_text(1,6,"μm")    
+   set_visiable(35,204,1)  set_visiable(36,204,1)  set_visiable(37,204,1)  set_visiable(38,204,1)  set_visiable(39,204,1)
+   set_visiable(35,203,0)  set_visiable(36,203,0)  set_visiable(37,203,0)  set_visiable(38,203,0)  set_visiable(39,203,0)
+ elseif get_value(1,101) == 1 then
+   set_text(1,201,"4")
+   set_text(1,202,"6")
+   set_text(1,203,"14") 
+   set_text(1,204,"21") 
+   set_text(1,205,"38") 
+   set_text(1,206,"70") 
+   set_text(1,7,"mL)")  
+   set_text(1,6,"μm(c)")   
+   set_visiable(35,204,0)  set_visiable(36,204,0)  set_visiable(37,204,0)  set_visiable(38,204,0)  set_visiable(39,204,0)
+   set_visiable(35,203,1)  set_visiable(36,203,1)  set_visiable(37,203,1)  set_visiable(38,203,1)  set_visiable(39,203,1) 
+ elseif get_value(1,101) == 3 then
+   set_text(1,201,"4")
+   set_text(1,202,"6")
+   set_text(1,203,"14") 
+   set_text(1,204,"21") 
+   set_text(1,205,"38") 
+   set_text(1,206,"70") 
+   set_text(1,7,"mL)") 
+   set_text(1,6,"μm(c)")    
+   set_visiable(35,204,0)  set_visiable(36,204,0)  set_visiable(37,204,0)  set_visiable(38,204,0)  set_visiable(39,204,0)
+   set_visiable(35,203,1)  set_visiable(36,203,1)  set_visiable(37,203,1)  set_visiable(38,203,1)  set_visiable(39,203,1) 
+  elseif get_value(1,101) == 4  then
+   set_text(1,201,"4")
+   set_text(1,202,"6")
+   set_text(1,203,"14") 
+   set_text(1,204,"21") 
+   set_text(1,205,"38") 
+   set_text(1,206,"70") 
+   set_text(1,7," mL)") 
+   set_text(1,6," μm(c)")    
+   set_visiable(35,204,0)  set_visiable(36,204,0)  set_visiable(37,204,0)  set_visiable(38,204,0)  set_visiable(39,204,0)
+   set_visiable(35,203,1)  set_visiable(36,203,1)  set_visiable(37,203,1)  set_visiable(38,203,1)  set_visiable(39,203,1) 
+ end
+end--Chapter 1 函数定义结束
+
+--Chapter 2 按键响应程序
+function on_control_notify(screen,control,value)   
+
+-- 2.1 手动切换语言
+
+if screen== 41 and get_value(41,13) == 1 then
+ set_text(41,3,"English")
+elseif screen== 41 and get_value(41,13) == 0 then
+ set_text(41,3,"简体中文")
+end
+ if screen == 41 and get_text(41,3) == "简体中文" then
+  wdata[0] = 0
+  flush_flash()
+  write_flash(4060,wdata)
+  local read_byte_data  = {}
+  read_byte_data = read_flash(4060,1)
+  set_text(0,11,read_byte_data[0])  
+  language_change() 
+ elseif screen == 41 and get_text(41,3) == "English" then
+  wdata[0] = 1
+  flush_flash()
+  write_flash(4060,wdata)
+  local read_byte_data  = {}
+  read_byte_data = read_flash(4060,1)
+  set_text(0,11,read_byte_data[0])  
+  language_change() 
+ end
+
+--2.2 设置成功弹窗显示与隐藏
+
+if screen ~=40 then
+
+  set_visiable(0,30,0)  set_visiable(0,31,0)
+  set_visiable(1,30,0)  set_visiable(1,31,0) 
+  set_visiable(5,30,0)  set_visiable(5,31,0) 
+  set_visiable(7,30,0)  set_visiable(7,31,0) 
+  set_visiable(10,30,0)  set_visiable(10,31,0) 
+  set_visiable(11,30,0)  set_visiable(11,31,0) 
+  set_visiable(12,30,0)  set_visiable(12,31,0) 
+  set_visiable(13,30,0)  set_visiable(13,31,0) 
+  set_visiable(14,30,0)  set_visiable(14,31,0) 
+  set_visiable(17,30,0)  set_visiable(17,31,0) 
+  set_visiable(19,30,0)  set_visiable(19,31,0) 
+  set_visiable(20,30,0)  set_visiable(20,31,0) 
+  set_visiable(21,30,0)  set_visiable(21,31,0)
+  set_visiable(22,30,0)  set_visiable(22,31,0) 
+  set_visiable(23,30,0)  set_visiable(23,31,0) 
+  set_visiable(24,30,0)  set_visiable(24,31,0) 
+  set_visiable(25,30,0)  set_visiable(25,31,0) 
+  set_visiable(26,30,0)  set_visiable(26,31,0) 
+  set_visiable(29,30,0)  set_visiable(29,31,0) 
+  set_visiable(30,30,0)  set_visiable(30,31,0) 
+  set_visiable(31,30,0)  set_visiable(31,31,0)  
+  set_visiable(3,3,0) 
+end
+
+-- 2.3 密码跳转
+
+  if screen == 3 then
+     if get_text(3,1) == "963852" then 
+        set_visiable(3,3,0) 
+        change_screen(15)
+ 	   my_uartsend_screen(15)	
+	    set_text(3,1,"***")           --输入963852时跳转，并改变已经输入的密码	
+	  elseif get_text(3,1) == "258369"
+ 	 then
+ 	    set_visiable(3,3,0)	 	
+        change_screen(0)
+ 	    set_text(3,1,"***") 		 
+ 	  my_uartsend_screen(0)		
+ 	 elseif get_text(3,1) == "147258369"
+ 	 then
+ 	    set_visiable(3,3,0)	 	
+        change_screen(10)
+ 	    set_text(3,1,"***") 		 
+ 	  my_uartsend_screen(10)		 
+    else
+    set_visiable(3,3,1)
+    end
+ end
+
+--2.4 名称改动
+if  get_text(0,11) == "0" then
+  if screen == 38 then set_text(2,201,"EC 污染物在线监测系统")
+  elseif screen==35 or screen==36 or screen==37 or screen==39 then 
+  set_text(2,201,"油液在线监测系统") 
+  end
+elseif  get_text(0,11) == "1" then
+  if screen == 38 then set_text(2,201,"EC Online Pollutans Monitoring System")
+  elseif screen==35 or screen==36 or screen==37 or screen==39 then 
+  set_text(2,201,"Online Oil Monitoring System") 
+  end
+end
+
+--2.5 主界面选择
+
+if screen ==35 then --选择为S03
+ set_visiable(1,303,0)set_visiable(1,61,0) set_text(2,202,"SLMS 03D S")--画面1的是否需要查看更多
+STD0 = {1,0,0,1}
+STD1 = {1,1,1,1}
+STD2 = {0,0,0,0}
+STD3 = {0,0,0,0}
+STD4 = {0,0,0,0}
+STD5 = {0,0,0,0}
+STD6 = {1,1,0,0,1,0,0,1,1,0,0,0,0}
+STD7 = {0,0,0,0,0,0,0,0,0,0}
+Mode_set()
+end
+
+ if screen ==36 then --选择为S04
+ set_visiable(1,303,0)set_visiable(1,61,0) set_text(2,202,"SLMS 04D SL")--画面1的是否需要查看更多
+STD0 = {1,2,0,1}
+STD1 = {0,0,0,0}
+STD2 = {1,1,1,1}
+STD3 = {0,0,0,0}
+STD4 = {0,0,0,0}
+STD5 = {0,0,0,0}
+STD6 = {1,1,1,1,1,0,0,1,1,1,1,0,0}
+STD7 = {1,1,1,1,1,1,1,1,1,1}
+Mode_set()
+end
+
+ if screen ==37 then --选择为S05（未定义，预留用）
+ set_visiable(1,303,0)set_visiable(1,61,0) set_text(2,202,"SLMS 05D SL")--画面1的是否需要查看更多
+STD0 = {1,2,1,1}
+STD1 = {0,0,0,0}
+STD2 = {0,0,0,0}
+STD3 = {1,1,1,1}
+STD4 = {0,0,0,0}
+STD5 = {0,0,0,0}
+STD6 = {1,1,1,1,1,1,0,1,1,1,1,1,0}
+STD7 = {1,1,1,1,1,1,1,1,1,1}
+Mode_set()
+end
+
+ if screen ==38 then --选择为EC污染物
+ set_visiable(1,303,0)set_visiable(1,61,0) set_text(2,202,"SLMS 04D SL")--画面1的是否需要查看更多
+STD0 = {1,0,0,1}
+STD1 = {0,0,0,0}
+STD2 = {0,0,0,0}
+STD3 = {0,0,0,0}
+STD4 = {1,1,1,1}
+STD5 = {0,0,0,0}
+STD6 = {1,1,1,1,1,0,1,1,1,1,1,0,1}
+STD7 = {1,1,1,1,1,1,1,1,1,1}
+Mode_set()
+end
+
+ if screen ==39 then --选择为图像法（未定义，预留用）
+ set_visiable(1,303,1)set_visiable(1,61,1) set_text(2,202,"图像法")--画面1的是否需要查看更多
+STD0 = {2,2,0,1}
+STD1 = {0,0,0,0}
+STD2 = {0,0,0,0}
+STD3 = {0,0,0,0}
+STD4 = {0,0,0,0}
+STD5 = {1,1,1,1}
+STD6 = {0,0,0,0,0,0,0,0,0,0,1,0,0}
+STD7 = {1,1,1,1,1,1,1,1,1,1}--这个暂时不好改，如果是图像法就不应该有这个画面，待定。
+Mode_set()
+end
+
+--2.6 历史曲线说明框
+  --24小时
+if get_value(32,107) == 2 then
+   set_visiable(32,4,1)
+else
+   set_visiable(32,4,0)
+end
+  --一周
+if get_value(33,107) == 2 then
+   set_visiable(33,4,1)
+else
+   set_visiable(33,4,0)
+end
+  --一个月
+if get_value(34,107) == 2 then
+   set_visiable(34,4,1)
+else
+   set_visiable(34,4,0)
+end
+
+--2.7 清洗和取样模式的特殊返回键
+
+if screen==15 then
+ set_visiable(28,302,0) set_visiable(28,303,1)
+ set_visiable(16,302,0) set_visiable(16,303,1)
+elseif screen == 4 then
+ set_visiable(28,302,1) set_visiable(28,303,0)
+ set_visiable(16,302,1) set_visiable(16,303,0)
+end
+
+--2.8 污染度监测标准选择
+if screen == 1 then
+   Cleanliness_select()
+end
+
+--2.9 本地通讯返回
+if screen ==18 then set_visiable(5,301,1) set_visiable(5,302,0)  end
+if screen ==4 then  set_visiable(5,301,0) set_visiable(5,302,1) end
+
+end --Chapter 2 按键响应程序结束
+
+--Chapter 3 上电执行程序
+function on_init() 
+--3.1自动语言切换
+ local read_byte_data  = {}
+ read_byte_data = read_flash(4060,1)
+ set_text(0,11,read_byte_data[0])
+ language_change()  
+--历史曲线弹窗设置为默认
+   set_visiable(2,31,0)
+   set_visiable(3,31,0)
+   set_visiable(4,31,0)
+   set_visiable(15,31,0)
+   set_visiable(35,31,0)
+   set_visiable(36,31,0)
+   set_visiable(37,31,0)
+   set_visiable(38,31,0)
+   set_visiable(39,31,0)
+--系统语言自动切换（报文发送）
+ if get_text(41,3) == "简体中文" then
+			--EE C1 00 C1 FF FC FF FF 
+			print("2222222222")	
+				local msg = {}
+				msg[0] = 0xEE
+				msg[1] = 0xC1	
+				msg[2] = 0x00
+				msg[3] = 0xC1	
+				msg[4] = 0xFF	
+				msg[5] = 0xFC	
+				msg[6] = 0xFF	
+				msg[7] = 0xFF	
+				send_ctrl_msg(msg)		
+
+ elseif get_text(41,3) == "English" then
+           print("333333333")	 
+				--EE C1 80 41 FF FC FF FF 
+				local msg = {}
+				msg[0] = 0xEE
+				msg[1] = 0xC1	
+				msg[2] = 0x80
+				msg[3] = 0x41	
+				msg[4] = 0xFF	
+				msg[5] = 0xFC	
+				msg[6] = 0xFF	
+				msg[7] = 0xFF	
+				send_ctrl_msg(msg)
+ end --报文发送结束
+   Cleanliness_select() 
+end --Chapter 3 上电执行程序结束
+
+--Chapter 4 每秒执行程序
+function on_systick()
+
+--4.1 油品选择
+-- 品牌选择 102壳牌 103美孚 104昆仑 105其他
+-- 油品选择 106 tellus 107turbo 108 omala 109morlina 110 shell other 111 mobil 112kunlun 113 other
+if get_value(14,101) == 0 then
+ set_visiable(14,102,1)	
+end
+  if get_value(14,102) == 0 then
+   set_visiable(14,106,1)	
+   set_visiable(14,107,0)	
+   set_visiable(14,108,0)	
+   set_visiable(14,109,0)	
+   set_visiable(14,110,0)	 
+  end
+  if get_value(14,102) == 1 then
+   set_visiable(14,106,0)	
+   set_visiable(14,107,1)	
+   set_visiable(14,108,0)	
+   set_visiable(14,109,0)	
+   set_visiable(14,110,0)	 
+  end	
+  if get_value(14,102) == 2 then
+   set_visiable(14,106,0)	
+   set_visiable(14,107,0)	
+   set_visiable(14,108,1)	
+   set_visiable(14,109,0)	
+   set_visiable(14,110,0)	 
+  end 
+  if get_value(14,102) == 3 then
+   set_visiable(14,106,0)	
+   set_visiable(14,107,0)	
+   set_visiable(14,108,0)	
+   set_visiable(14,109,1)	
+   set_visiable(14,110,0)	 
+  end
+  if get_value(14,102) == 4 then
+   set_visiable(14,106,0)	
+   set_visiable(14,107,0)	
+   set_visiable(14,108,0)	
+   set_visiable(14,109,0)	
+   set_visiable(14,110,1)	 
+  end
+ if get_value(14,101) ~= 0 then
+  set_visiable(14,102,0)
+  set_visiable(14,106,0)	
+  set_visiable(14,107,0)	
+  set_visiable(14,108,0)	
+  set_visiable(14,109,0)
+  set_visiable(14,110,0)	 
+end  
+--美孚系列选择
+if get_value(14,101) == 1 then
+  set_visiable(14,103,1)	
+ if get_value(14,103) == 0 then
+  set_visiable(14,111,1)	
+ end
+end
+if get_value(14,101) ~= 1 then
+set_visiable(14,103,0)	
+set_visiable(14,111,0)	
+end
+--CNPC系列选择
+if get_value(14,101) == 2 then
+  set_visiable(14,104,1)	
+ if get_value(14,104) == 0 then
+  set_visiable(14,112,1)	
+ end
+end
+
+if get_value(14,101) ~= 2 then
+set_visiable(14,104,0)	
+set_visiable(14,112,0)	
+end
+
+--其他系列选择
+if get_value(14,101) == 3 then
+  set_visiable(14,105,1)	
+ if get_value(14,105) == 0 then
+  set_visiable(14,113,1)	
+ end
+end
+
+if get_value(14,101) ~= 3 then
+set_visiable(14,105,0)	
+set_visiable(14,113,0)	
+end
+	
+--4.2ISO检测标准污染度数值更新
+--value NAS1638 == 0 GB/T14039 == 1 SAE AS4059G-2022(um) == 2 SAE AS4059G-2022(umc) == 3 ISO4406 == 4
+set_text(35,203,get_text(35,204))
+set_text(36,203,get_text(36,204))
+set_text(37,203,get_text(37,204))
+set_text(38,203,get_text(38,204))
+
+
+--4.3 英文版图标切换
+--画面0传感器选择图标切换
+set_value(0,121,get_value(0,101))
+set_value(0,111,get_value(0,101))
+set_value(0,122,get_value(0,102))
+set_value(0,112,get_value(0,102))
+set_value(0,123,get_value(0,103))
+set_value(0,113,get_value(0,103))
+set_value(0,124,get_value(0,104))
+set_value(0,114,get_value(0,104))
+--画面7设备状态图标切换
+set_value(7,112,get_value(7,104))
+set_value(7,111,get_value(7,104))
+set_value(7,121,get_value(7,101))
+set_value(7,122,get_value(7,101))
+--画面4工作模式图标切换
+set_value(4,102,get_value(4,101))
+set_value(4,103,get_value(4,101))
+--画面15工作模式图标切换
+set_value(15,109,get_value(15,108))
+set_value(15,110,get_value(15,108))
+--画面31校准图标切换
+set_value(31,102,get_value(31,101))
+set_value(31,103,get_value(31,101))
+--底部图标切换
+if get_value(35,116) == 0 then set_value(35,117,0) else set_value(35,117,1) end
+if get_value(36,116) == 0 then set_value(36,117,0) else set_value(36,117,1) end
+if get_value(37,116) == 0 then set_value(37,117,0) else set_value(37,117,1) end
+if get_value(38,116) == 0 then set_value(38,117,0) else set_value(38,117,1) end
+if get_value(39,116) == 0 then set_value(39,117,0) else set_value(39,117,1) end
+--主界面底部状态信息
+set_value(35,118,get_value(35,116)) set_value(35,119,get_value(35,116))
+set_value(36,118,get_value(36,116)) set_value(36,119,get_value(36,116))
+set_value(37,118,get_value(37,116)) set_value(37,119,get_value(37,116))
+set_value(38,118,get_value(38,116)) set_value(38,119,get_value(38,116))
+set_value(39,118,get_value(39,116)) set_value(39,119,get_value(39,116))
+--主界面报警信息更新
+ set_value(35,121,get_value(35,111))set_value(35,131,get_value(35,111))
+ set_value(35,122,get_value(35,112))set_value(35,132,get_value(35,112))
+ set_value(35,123,get_value(35,113))set_value(35,133,get_value(35,113))
+ set_value(35,124,get_value(35,114))set_value(35,134,get_value(35,114))
+ set_value(35,125,get_value(35,115))set_value(35,135,get_value(35,115))
+
+ set_value(36,121,get_value(36,111))set_value(36,131,get_value(36,111))
+ set_value(36,122,get_value(36,112))set_value(36,132,get_value(36,112))
+ set_value(36,123,get_value(36,113))set_value(36,133,get_value(36,113))
+ set_value(36,124,get_value(36,114))set_value(36,134,get_value(36,114))
+ set_value(36,125,get_value(36,115))set_value(36,135,get_value(36,115)) 
+
+ set_value(37,121,get_value(37,111))set_value(37,131,get_value(37,111))
+ set_value(37,122,get_value(37,112))set_value(37,132,get_value(37,112))
+ set_value(37,123,get_value(37,113))set_value(37,133,get_value(37,113))
+ set_value(37,124,get_value(37,114))set_value(37,134,get_value(37,114))
+ set_value(37,125,get_value(37,115))set_value(37,135,get_value(37,115)) 
+
+ set_value(38,121,get_value(38,111))set_value(38,131,get_value(36,111))
+ set_value(38,122,get_value(38,112))set_value(38,132,get_value(36,112))
+ set_value(38,123,get_value(38,113))set_value(38,133,get_value(36,113))
+ set_value(38,124,get_value(38,114))set_value(38,134,get_value(36,114))
+ set_value(38,125,get_value(38,115))set_value(38,135,get_value(36,115))  
+  
+ set_value(39,121,get_value(39,111))set_value(39,131,get_value(39,111))
+ set_value(39,122,get_value(39,112))set_value(39,132,get_value(39,112))
+ set_value(39,123,get_value(39,113))set_value(39,133,get_value(39,113))
+ set_value(39,124,get_value(39,114))set_value(39,134,get_value(39,114))
+ set_value(39,125,get_value(39,115))set_value(39,135,get_value(39,115))  
+--历史曲线单位切换
+set_value(32,108,get_value(32,107)) 
+set_value(33,108,get_value(33,107)) 
+set_value(34,108,get_value(34,107)) 
+
+end --Chapter 4 每秒执行程序结束
