@@ -167,6 +167,8 @@ set_text(13,1,"电阻率标定系数设置")set_text(13,2,"电阻率标定系数
  --画面42
  set_text(42,75,"时间校准")set_text(42,76,"触控校准")set_text(42,52,"返回")
  elseif get_text(0,11) == "1" then
+
+
  --画面0
  set_text(0,51,"Confirm")set_text(0,52,"Return")set_text(0,1,"Cleanliness sensor selection") set_text(0,2,"Viscosity sensor selection") set_text(0,3,"Acidity sensor selection") set_text(0,4,"Moisture sensor selection") set_value(0,13,1)set_visiable(0,111,0)set_visiable(0,121,1)set_visiable(0,112,0)set_visiable(0,122,1)set_visiable(0,113,0)set_visiable(0,123,1)set_visiable(0,114,0)set_visiable(0,124,1)
  --画面1
@@ -272,6 +274,7 @@ set_text(5,15,"IP address")set_text(5,52,"Return")
  set_text(41,52,"Return") set_text(41,3,"English")set_value(41,13,1)	
  --画面42
  set_text(42,75,"Time calibration")set_text(42,76,"Touch calibration")set_text(42,52,"Return")
+
 end
 end
 
