@@ -1,0 +1,192 @@
+Sub ProcessEquipmentAlarmData()
+    Application.ScreenUpdating = False
+    Application.DisplayAlerts = False
+    On Error GoTo ErrorHandler
+    
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.ActiveSheet
+    
+    ' 获取数据范围
+    Dim lastRow As Long, lastCol As Long
+    lastRow = ws.Cells(ws.Rows.Count, 1).End(xlUp).Row
+    lastCol = ws.Cells(1, ws.Columns.Count).End(xlToLeft).Column
+    
+    ' 显示当前表头用于调试
+    Debug.Print "原始表头:"
+    For i = 1 To lastCol
+        Debug.Print "列" & i & ": " & ws.Cells(1, i).Value
+    Next i
+    
+    ' 1. 查找各列的原始位置
+    Dim indicatorCol As Long, deviceCol As Long
+    Dim exceedCol As Long, timeCol As Long, alarmInfoCol As Long
+    
+    For i = 1 To lastCol
+        Select Case ws.Cells(1, i).Value
+            Case "指标类型": indicatorCol = i
+            Case "设备": deviceCol = i
+            Case "超限数值": exceedCol = i
+            Case "告警时间": timeCol = i
+            Case "告警信息": alarmInfoCol = i
+        End Select
+    Next i
+    
+    ' 检查必要的列是否存在
+    If indicatorCol = 0 Or deviceCol = 0 Then
+        MsgBox "未找到'指标类型'或'设备'列！", vbExclamation
+        Exit Sub
+    End If
+    
+    ' 2. 按指标类型和设备列排序
+    With ws.Sort
+        .SortFields.Clear
+        .SortFields.Add key:=ws.Cells(1, indicatorCol).Resize(lastRow), _
+            SortOn:=xlSortOnValues, Order:=xlAscending
+        .SortFields.Add key:=ws.Cells(1, deviceCol).Resize(lastRow), _
+            SortOn:=xlSortOnValues, Order:=xlAscending
+        .SetRange ws.Range("A1").CurrentRegion
+        .Header = xlYes
+        .Apply
+    End With
+    
+    ' 3. 计算重复计数（使用临时列来存储）
+    Dim dict As Object
+    Set dict = CreateObject("Scripting.Dictionary")
+    
+    For i = 2 To lastRow
+        Dim key As String
+        key = ws.Cells(i, indicatorCol).Value & "|" & ws.Cells(i, deviceCol).Value
+        
+        If dict.exists(key) Then
+            dict(key) = dict(key) + 1
+        Else
+            dict.Add key, 1
+        End If
+    Next i
+    
+    ' 在最后一列后添加临时列存储重复计数
+    ws.Cells(1, lastCol + 1).Value = "临时重复计数"
+    For i = 2 To lastRow
+        key = ws.Cells(i, indicatorCol).Value & "|" & ws.Cells(i, deviceCol).Value
+        ws.Cells(i, lastCol + 1).Value = dict(key)
+    Next i
+    
+    ' 4. 删除重复行
+    ws.Range("A1").CurrentRegion.RemoveDuplicates _
+        Columns:=Array(indicatorCol, deviceCol), Header:=xlYes
+    
+    ' 5. 重新获取数据范围
+    lastRow = ws.Cells(ws.Rows.Count, 1).End(xlUp).Row
+    lastCol = ws.Cells(1, ws.Columns.Count).End(xlToLeft).Column
+    
+    ' 6. 在最左边插入两列
+    ws.Columns(1).Insert Shift:=xlToRight
+    ws.Columns(1).Insert Shift:=xlToRight
+    ws.Cells(1, 1).Value = "对应BD"
+    ws.Cells(1, 2).Value = "重复计数"
+    
+    ' 7. 将临时重复计数列的值复制到B列
+    Dim tempCountCol As Long
+    tempCountCol = 0
+    For i = 1 To lastCol + 2
+        If ws.Cells(1, i).Value = "临时重复计数" Then
+            tempCountCol = i
+            Exit For
+        End If
+    Next i
+    
+    If tempCountCol > 0 Then
+        For i = 2 To lastRow
+            ws.Cells(i, 2).Value = ws.Cells(i, tempCountCol).Value
+        Next i
+        ' 删除临时列
+        ws.Columns(tempCountCol).Delete
+    End If
+    
+    ' 8. 重新查找其他列的位置
+    lastCol = ws.Cells(1, ws.Columns.Count).End(xlToLeft).Column
+    exceedCol = 0: timeCol = 0: alarmInfoCol = 0
+    
+    For i = 3 To lastCol
+        Select Case ws.Cells(1, i).Value
+            Case "超限数值": exceedCol = i
+            Case "告警时间": timeCol = i
+            Case "告警信息": alarmInfoCol = i
+        End Select
+    Next i
+    
+    ' 9. 复制超限数值到告警信息列
+    If exceedCol > 0 And alarmInfoCol > 0 Then
+        For i = 2 To lastRow
+            ws.Cells(i, alarmInfoCol).Value = ws.Cells(i, exceedCol).Value
+        Next i
+    End If
+    
+    ' 10. 移动列到正确位置
+    ' 移动告警信息列到C列
+    If alarmInfoCol > 0 Then
+        ws.Columns(alarmInfoCol).Cut
+        ws.Columns(3).Insert Shift:=xlToRight
+    End If
+    
+    ' 移动超限数值列到D列
+    If exceedCol > 0 Then
+        ' 重新查找位置
+        exceedCol = 0
+        For i = 3 To lastCol
+            If ws.Cells(1, i).Value = "超限数值" Then exceedCol = i: Exit For
+        Next i
+        If exceedCol > 0 Then
+            ws.Columns(exceedCol).Cut
+            ws.Columns(4).Insert Shift:=xlToRight
+        End If
+    End If
+    
+    ' 移动告警时间列到E列
+    If timeCol > 0 Then
+        ' 重新查找位置
+        timeCol = 0
+        For i = 3 To lastCol
+            If ws.Cells(1, i).Value = "告警时间" Then timeCol = i: Exit For
+        Next i
+        If timeCol > 0 Then
+            ws.Columns(timeCol).Cut
+            ws.Columns(5).Insert Shift:=xlToRight
+        End If
+    End If
+    
+    ' 11. 删除指定列
+    lastCol = ws.Cells(1, ws.Columns.Count).End(xlToLeft).Column
+    For i = lastCol To 6 Step -1 ' 从第6列开始删除
+        Select Case ws.Cells(1, i).Value
+            Case "已推送告警", "关联工程师", "备注"
+                ws.Columns(i).Delete
+        End Select
+    Next i
+    
+    ' 12. 重命名工作表
+    On Error Resume Next
+    ws.Name = "设备自检报警"
+    If Err.Number <> 0 Then
+        ws.Name = "设备自检报警_" & Format(Now, "hhmmss")
+    End If
+    On Error GoTo 0
+    
+    Application.ScreenUpdating = True
+    Application.DisplayAlerts = True
+    
+    MsgBox "数据处理完成！" & vbCrLf & _
+           "A列：对应BD" & vbCrLf & _
+           "B列：重复计数" & vbCrLf & _
+           "C列：告警信息" & vbCrLf & _
+           "D列：超限数值" & vbCrLf & _
+           "E列：告警时间", vbInformation
+    
+    Exit Sub
+    
+ErrorHandler:
+    Application.ScreenUpdating = True
+    Application.DisplayAlerts = True
+    MsgBox "错误: " & Err.Description & " (行: " & Erl & ")", vbCritical
+End Sub
+

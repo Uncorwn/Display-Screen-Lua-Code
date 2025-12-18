@@ -1,0 +1,305 @@
+Sub ProcessAlarmData()
+    Application.ScreenUpdating = False
+    Application.DisplayAlerts = False
+    Application.Calculation = xlCalculationManual
+    Application.EnableEvents = False
+    
+    Dim wsOriginal As Worksheet
+    Dim wsSummary As Worksheet
+    Dim wsWOFE As Worksheet
+    Dim wsFactory As Worksheet
+    Dim lastRow As Long
+    Dim factoryDict As Object
+    Dim i As Long, j As Long, k As Long
+    
+    On Error GoTo ErrorHandler
+    
+    Set wsOriginal = ThisWorkbook.Sheets("Sheet1")
+    
+    ' 0. 删除SHELL WOFE 测试工厂的数据
+    lastRow = wsOriginal.Cells(wsOriginal.Rows.Count, "A").End(xlUp).Row
+    If lastRow > 1 Then
+        Dim rowsToDelete As Collection
+        Set rowsToDelete = New Collection
+        
+        ' 从下往上遍历，避免删除行导致索引变化
+        For i = lastRow To 2 Step -1
+            Dim factoryName As String
+            factoryName = wsOriginal.Cells(i, "B").Value ' B列是工厂列
+            
+            If factoryName = "SHELL WOFE 测试工厂" Then
+                rowsToDelete.Add i
+            End If
+        Next i
+        
+        ' 删除找到的行
+        For Each rowNum In rowsToDelete
+            wsOriginal.Rows(rowNum).Delete
+        Next rowNum
+        
+        MsgBox "已删除 " & rowsToDelete.Count & " 行SHELL WOFE测试工厂数据"
+    End If
+    
+    ' 重新获取最后一行（因为可能删除了行）
+    lastRow = wsOriginal.Cells(wsOriginal.Rows.Count, "A").End(xlUp).Row
+    
+    ' 1. 删除N列及之后的列
+    If lastRow > 0 Then
+        If wsOriginal.Range("N1").Value <> "" Or wsOriginal.Range("N2").Value <> "" Then
+            wsOriginal.Range(wsOriginal.Columns("N"), wsOriginal.Columns(wsOriginal.Columns.Count)).Delete
+        End If
+    End If
+    
+    ' 2. 创建工厂报警信息汇总表
+    Set wsSummary = ThisWorkbook.Sheets.Add(After:=ThisWorkbook.Sheets(ThisWorkbook.Sheets.Count))
+    wsSummary.Name = "工厂报警信息汇总"
+    
+    ' 设置表头，增加报警总数列
+    wsSummary.Range("A1").Value = "工厂"
+    wsSummary.Range("B1").Value = "监测点"
+    wsSummary.Range("C1").Value = "指标类型"
+    wsSummary.Range("D1").Value = "传感器产品型号"
+    wsSummary.Range("E1").Value = "报警总数"
+    
+    ' 使用字典收集唯一数据和报警总数
+    Set factoryDict = CreateObject("Scripting.Dictionary")
+    lastRow = wsOriginal.Cells(wsOriginal.Rows.Count, "A").End(xlUp).Row
+    
+    ' 首先统计每个工厂的总报警数
+    Dim factoryAlarmCount As Object
+    Set factoryAlarmCount = CreateObject("Scripting.Dictionary")
+    
+    For i = 2 To lastRow
+        factoryName = wsOriginal.Cells(i, "B").Value ' B列
+        
+        If factoryName <> "" Then
+            If factoryAlarmCount.Exists(factoryName) Then
+                factoryAlarmCount(factoryName) = factoryAlarmCount(factoryName) + 1
+            Else
+                factoryAlarmCount.Add factoryName, 1
+            End If
+        End If
+    Next i
+    
+    ' 检查是否有数据
+    If lastRow < 2 Then
+        MsgBox "没有数据需要处理！"
+        GoTo CleanUp
+    End If
+    
+    ' 收集唯一数据
+    For i = 2 To lastRow
+        factoryName = wsOriginal.Cells(i, "B").Value ' B列
+        
+        If factoryName <> "" Then
+            Dim key As String
+            key = factoryName & "|" & wsOriginal.Cells(i, "E").Value & "|" & _
+                  wsOriginal.Cells(i, "J").Value & "|" & wsOriginal.Cells(i, "H").Value
+            
+            If Not factoryDict.Exists(key) Then
+                ' 存储工厂名称、监测点、指标类型、传感器型号和报警总数
+                factoryDict.Add key, Array(factoryName, wsOriginal.Cells(i, "E").Value, _
+                                           wsOriginal.Cells(i, "J").Value, wsOriginal.Cells(i, "H").Value, _
+                                           factoryAlarmCount(factoryName))
+            End If
+        End If
+    Next i
+    
+    ' 写入汇总数据
+    If factoryDict.Count > 0 Then
+        Dim dictKeys As Variant
+        dictKeys = factoryDict.Keys
+        
+        For i = 0 To factoryDict.Count - 1
+            With wsSummary
+                .Cells(i + 2, 1).Value = factoryDict(dictKeys(i))(0) ' 工厂
+                .Cells(i + 2, 2).Value = factoryDict(dictKeys(i))(1) ' 监测点
+                .Cells(i + 2, 3).Value = factoryDict(dictKeys(i))(2) ' 指标类型
+                .Cells(i + 2, 4).Value = factoryDict(dictKeys(i))(3) ' 传感器产品型号
+                .Cells(i + 2, 5).Value = factoryDict(dictKeys(i))(4) ' 报警总数
+            End With
+        Next i
+    End If
+    
+    ' 3. 按工厂拆分数据
+    Dim factorySheetsDict As Object
+    Set factorySheetsDict = CreateObject("Scripting.Dictionary")
+    
+    ' 收集所有工厂数据
+    For i = 2 To lastRow
+        factoryName = wsOriginal.Cells(i, "B").Value
+        
+        If factoryName <> "" Then
+            If Not factorySheetsDict.Exists(factoryName) Then
+                Dim factoryRows As Collection
+                Set factoryRows = New Collection
+                factorySheetsDict.Add factoryName, factoryRows
+            End If
+            
+            factorySheetsDict(factoryName).Add i
+        End If
+    Next i
+    
+    ' 创建工厂工作表并填充数据
+    Dim factoryKey As Variant
+    For Each factoryKey In factorySheetsDict.Keys
+        On Error Resume Next
+        Application.DisplayAlerts = False
+        ThisWorkbook.Sheets(CStr(factoryKey)).Delete
+        Application.DisplayAlerts = True
+        On Error GoTo 0
+        
+        Set wsFactory = ThisWorkbook.Sheets.Add(After:=ThisWorkbook.Sheets(ThisWorkbook.Sheets.Count))
+        wsFactory.Name = Left(CStr(factoryKey), 31) ' 确保工作表名称不超过31个字符
+        
+        ' 复制表头
+        wsOriginal.Range("A1:M1").Copy wsFactory.Range("A1")
+        
+        ' 复制数据行
+        Set factoryRows = factorySheetsDict(factoryKey)
+        Dim destRow As Long: destRow = 2
+        
+        For Each rowNum In factoryRows
+            wsOriginal.Range("A" & rowNum & ":M" & rowNum).Copy wsFactory.Range("A" & destRow)
+            destRow = destRow + 1
+        Next rowNum
+        
+        ' 排序（只有在有数据时才进行排序）
+        If factoryRows.Count > 0 Then
+            With wsFactory.Sort
+                .SortFields.Clear
+                .SortFields.Add Key:=wsFactory.Range("J2:J" & destRow - 1), Order:=xlAscending
+                .SortFields.Add Key:=wsFactory.Range("M2:M" & destRow - 1), Order:=xlDescending
+                .SetRange wsFactory.Range("A1:M" & destRow - 1)
+                .Header = xlYes
+                .Apply
+            End With
+        End If
+    Next factoryKey
+    
+    ' 4. 创建WOFE云平台报警数据表（先创建在最后）
+    Set wsWOFE = ThisWorkbook.Sheets.Add(After:=ThisWorkbook.Sheets(ThisWorkbook.Sheets.Count))
+    wsWOFE.Name = "WOFE云平台报警数据"
+    
+    ' 复制表头
+    wsOriginal.Range("A1:M1").Copy wsWOFE.Range("A1")
+    
+    ' 筛选特定传感器型号的数据
+    Dim woferowCount As Long: woferowCount = 2
+    For i = 2 To lastRow
+        Dim sensorModel As String
+        sensorModel = wsOriginal.Cells(i, "H").Value ' H列
+        
+        If sensorModel = "SLMS 03D S" Or sensorModel = "SLMS 04D SL" Then
+            wsOriginal.Range("A" & i & ":M" & i).Copy wsWOFE.Range("A" & woferowCount)
+            woferowCount = woferowCount + 1
+        End If
+    Next i
+    
+    ' 插入新列
+    wsWOFE.Columns("A:B").Insert Shift:=xlToRight
+    wsWOFE.Range("A1").Value = "对应BD"
+    wsWOFE.Range("B1").Value = "报警总数"
+    
+    ' 计算报警总数并去重
+    Dim alarmDict As Object
+    Set alarmDict = CreateObject("Scripting.Dictionary")
+    
+    lastRow = wsWOFE.Cells(wsWOFE.Rows.Count, "C").End(xlUp).Row
+    
+    If lastRow > 1 Then
+        ' 第一次遍历：计数
+        For i = 2 To lastRow
+            Dim sensorID As String
+            Dim alarmType As String
+            sensorID = wsWOFE.Cells(i, "G").Value ' G列（原F列）
+            alarmType = wsWOFE.Cells(i, "L").Value ' L列（原J列）
+            
+            If sensorID <> "" And alarmType <> "" Then
+                key = sensorID & "|" & alarmType
+                
+                If alarmDict.Exists(key) Then
+                    alarmDict(key) = alarmDict(key) + 1
+                Else
+                    alarmDict.Add key, 1
+                End If
+            End If
+        Next i
+        
+        ' 第二次遍历：填写计数和标记要删除的行
+        Dim rowsToDeleteWOFE As Collection
+        Set rowsToDeleteWOFE = New Collection
+        Dim latestTimeDict As Object
+        Set latestTimeDict = CreateObject("Scripting.Dictionary")
+        
+        For i = 2 To lastRow
+            sensorID = wsWOFE.Cells(i, "G").Value
+            alarmType = wsWOFE.Cells(i, "L").Value
+            
+            If sensorID <> "" And alarmType <> "" Then
+                key = sensorID & "|" & alarmType
+                Dim alarmTime As Date
+                alarmTime = wsWOFE.Cells(i, "O").Value ' O列（原M列）
+                
+                wsWOFE.Cells(i, "B").Value = alarmDict(key)
+                
+                If latestTimeDict.Exists(key) Then
+                    If alarmTime > latestTimeDict(key) Then
+                        rowsToDeleteWOFE.Add latestTimeDict(key & "_row")
+                        latestTimeDict(key) = alarmTime
+                        latestTimeDict(key & "_row") = i
+                    Else
+                        rowsToDeleteWOFE.Add i
+                    End If
+                Else
+                    latestTimeDict.Add key, alarmTime
+                    latestTimeDict.Add key & "_row", i
+                End If
+            End If
+        Next i
+        
+        ' 删除旧数据（从下往上删除）
+        For i = rowsToDeleteWOFE.Count To 1 Step -1
+            wsWOFE.Rows(rowsToDeleteWOFE(i)).Delete
+        Next i
+    End If
+    
+    ' 调整列宽
+    wsWOFE.Columns.AutoFit
+    wsSummary.Columns.AutoFit
+    
+    ' 为汇总表添加边框和格式
+    With wsSummary
+        If .Cells(2, 1).Value <> "" Then
+            Dim summaryLastRow As Long
+            summaryLastRow = .Cells(.Rows.Count, "A").End(xlUp).Row
+            
+            ' 添加边框
+            .Range("A1:E" & summaryLastRow).Borders.LineStyle = xlContinuous
+            
+            ' 设置标题行格式
+            .Range("A1:E1").Interior.Color = RGB(200, 200, 200)
+            .Range("A1:E1").Font.Bold = True
+            
+            ' 自动调整列宽
+            .Columns("A:E").AutoFit
+        End If
+    End With
+    
+    ' 5. 移动WOFE云平台报警数据表到第三个位置
+    On Error Resume Next
+    wsWOFE.Move Before:=ThisWorkbook.Sheets(3)
+    On Error GoTo 0
+    
+CleanUp:
+    Application.ScreenUpdating = True
+    Application.DisplayAlerts = True
+    Application.Calculation = xlCalculationAutomatic
+    Application.EnableEvents = True
+    MsgBox "数据处理完成！已删除SHELL WOFE测试工厂数据，工厂报警信息汇总表中已显示各工厂的报警总数，WOFE云平台报警数据表已移动到第三个位置。"
+    Exit Sub
+    
+ErrorHandler:
+    MsgBox "发生错误: " & Err.Description & " (错误号: " & Err.Number & ")", vbCritical
+    Resume CleanUp
+End Sub
