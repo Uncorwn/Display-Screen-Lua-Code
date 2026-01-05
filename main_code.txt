@@ -75,7 +75,7 @@ set_text(3,4,"请输入密码")set_text(3,3,"密码错误请重新输入")set_te
 set_text(4,71,"实时监测")set_text(4,72,"系统信息")set_text(4,73,"厂商设置")set_text(4,74,"历史信息")set_text(4,75,"校准设置")set_text(4,76,"语言选择")set_text(4,77,"参数设置")set_text(4,78,"设备状态")set_text(4,79,"检测介质设置")set_text(4,80,"当前工作模式")
 set_visiable(4,102,0)set_visiable(4,103,1)
 --画面5
-set_text(5,1,"校验")set_text(5,2,"波特率")set_text(5,3,"停止位")set_text(5,4,"地址")set_text(5,5,"通讯模式切换")set_text(5,6,"本地通讯参数设置")set_text(5,15,"IP地址")set_text(5,52,"返回")
+set_text(5,1,"校验")set_text(5,2,"波特率")set_text(5,3,"停止位")set_text(5,4,"地址")set_text(5,5,"通讯模式切换")set_text(5,6,"本地通讯参数设置")set_text(5,15,"IP地址")set_text(5,52,"返回")set_text(5,51,"确定")
 --画面6
 set_text(6,16,"污染度详情参数")set_text(6,1,"气泡总数")set_text(6,2,"切削磨损颗粒")set_text(6,3,"切削磨损占比")set_text(6,4,"滑动磨损颗粒")set_text(6,5,"滑动磨损占比")set_text(6,6,"疲劳磨损颗粒")set_text(6,7,"疲劳磨损占比")set_text(6,8,"纤维")set_text(6,9,"纤维占比")set_text(6,10,"空气")set_text(6,11,"空气占比")set_text(6,12,"其他磨损")set_text(6,13,"其他占比")set_text(6,14,"油液老化程度")
 --画面7
@@ -182,8 +182,7 @@ set_text(2,206,"Shell (China) Limited")set_text(2,207,"010-65295459")set_text(2,
 set_visiable(4,102,1)set_visiable(4,103,0)
  --画面5
  set_text(5,1,"Verification")set_text(5,2,"Baud rate")set_text(5,3,"Stop position")set_text(5,4,"ID")set_text(5,5,"Communication mode")set_text(5,6,"Local communication settings")
-set_text(5,15,"IP address")set_text(5,52,"Return")
-
+set_text(5,15,"IP address")set_text(5,52,"Return")set_text(5,51,"Confirm")
  --画面6
  set_text(6,16,"Cleanliness parameters")set_text(6,1,"Bubble")set_text(6,2,"Cutting wear particles")set_text(6,3,"Cutting wear proportion")set_text(6,4,"Sliding wear particles")set_text(6,5,"Sliding wear proportion")set_text(6,6,"Fatigue wear particles")set_text(6,7,"Fatigue wear proportion")set_text(6,8,"Fiber")set_text(6,9,"Fiber proportion")set_text(6,10,"Air")set_text(6,11,"Air proportion")set_text(6,12,"Other")set_text(6,13,"Other proportion")set_text(6,14,"Degree of oil aging")
  --画面7
