@@ -550,9 +550,6 @@ if screen == 1 then
    Cleanliness_select()
 end
 
---2.9 本地通讯返回
-if screen ==18 then set_visiable(5,301,1) set_visiable(5,302,0)  end
-if screen ==4 then  set_visiable(5,301,0) set_visiable(5,302,1) end
 
 end --Chapter 2 按键响应程序结束
 
