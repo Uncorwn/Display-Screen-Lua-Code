@@ -69,9 +69,9 @@ function language_change()
 --画面0
 set_text(0,51,"确定")set_text(0,52,"返回")set_text(0,1,"污染度传感器选择") set_text(0,2,"粘度传感器选择") set_text(0,3,"酸值传感器选择") set_text(0,4,"水分传感器选择") set_value(0,13,0)set_visiable(0,111,1)set_visiable(0,121,0)set_visiable(0,112,1)set_visiable(0,122,0)set_visiable(0,113,1)set_visiable(0,123,0)set_visiable(0,114,1)set_visiable(0,124,0)
 --画面1
-set_text(1,52,"返回")set_text(1,61,"查看更多")set_text(1,8,"(个/")
+set_text(1,52,"返回")set_text(1,61,"查看更多")set_text(1,8,"(个/100mL)")
 --画面2
-set_text(2,206,"壳牌（中国）有限公司")set_text(2,207,"010-65295459")set_text(2,8,"设备名称")set_text(2,9,"设备型号")set_text(2,10,"设备序列")set_text(2,11,"软件版本")set_text(2,12,"硬件版本")set_text(2,13,"生产厂商")set_text(2,14,"联系电话")set_text(2,71,"实时监测")set_text(2,72,"系统信息")set_text(2,73,"厂商设置")set_text(2,74,"历史信息")
+set_text(2,206,"待输入")set_text(2,207,"待输入")set_text(2,8,"设备名称")set_text(2,9,"设备型号")set_text(2,10,"设备序列")set_text(2,11,"软件版本")set_text(2,12,"硬件版本")set_text(2,13,"生产厂商")set_text(2,14,"联系电话")set_text(2,71,"实时监测")set_text(2,72,"系统信息")set_text(2,73,"厂商设置")set_text(2,74,"历史信息")
 --画面3
 set_text(3,4,"请输入密码")set_text(3,3,"密码错误请重新输入")set_text(3,71,"实时监测")set_text(3,72,"系统信息")set_text(3,73,"厂商设置")set_text(3,74,"历史信息")
 --画面4
@@ -175,9 +175,9 @@ set_text(13,1,"电阻率标定系数设置")set_text(13,2,"电阻率标定系数
  --画面0
  set_text(0,51,"Confirm")set_text(0,52,"Return")set_text(0,1,"Cleanliness sensor selection") set_text(0,2,"Viscosity sensor selection") set_text(0,3,"Acidity sensor selection") set_text(0,4,"Moisture sensor selection") set_value(0,13,1)set_visiable(0,111,0)set_visiable(0,121,1)set_visiable(0,112,0)set_visiable(0,122,1)set_visiable(0,113,0)set_visiable(0,123,1)set_visiable(0,114,0)set_visiable(0,124,1)
  --画面1
- set_text(1,52,"Return")set_text(1,61,"More")set_text(1,8,"(Particle counts /")
+ set_text(1,52,"Return")set_text(1,61,"More")set_text(1,8,"(Particle counts /100mL)")
  --画面2
-set_text(2,206,"Shell (China) Limited")set_text(2,207,"010-65295459")set_text(2,8,"Name")set_text(2,9,"Model")set_text(2,10,"Ser.No")set_text(2,11,"Software")set_text(2,12,"Hardware")set_text(2,13,"Manufacture")set_text(2,14,"Contact")set_text(2,71,"Live data")set_text(2,72,"System info")set_text(2,73,"Settings")set_text(2,74,"Records")
+set_text(2,206,"To be defined")set_text(2,207,"To be defined")set_text(2,8,"Name")set_text(2,9,"Model")set_text(2,10,"Ser.No")set_text(2,11,"Software")set_text(2,12,"Hardware")set_text(2,13,"Manufacture")set_text(2,14,"Contact")set_text(2,71,"Live data")set_text(2,72,"System info")set_text(2,73,"Settings")set_text(2,74,"Records")
  --画面3
  set_text(3,4,"Please enter the password")set_text(3,3,"The password is incorrect，plesase enter it again.")set_text(3,71,"Live data")set_text(3,72,"System info")set_text(3,73,"Settings")set_text(3,74,"Records")
  --画面4
@@ -295,7 +295,6 @@ local STD7 = {}
 function Mode_set()
 --STD8[0] = 12
 --set_value(0,101,STD0[1]) set_value(0,102,STD0[2]) set_value(0,103,STD0[3]) set_value(0,104,STD0[4])                    --画面0的传感器选择
-set_text(0,14,STD0[1])
 set_visiable(4,301,STD1[1]) set_visiable(3,301,STD1[2]) set_visiable(2,301,STD1[3]) set_visiable(15,301,STD1[4])
 set_visiable(4,302,STD2[1]) set_visiable(3,302,STD2[2]) set_visiable(2,302,STD2[3]) set_visiable(15,302,STD2[4])
 set_visiable(4,303,STD3[1]) set_visiable(3,303,STD3[2]) set_visiable(2,303,STD3[3]) set_visiable(15,303,STD3[4])
@@ -356,7 +355,20 @@ function Cleanliness_select()
    set_text(1,6," μm(c)")    
    set_visiable(35,204,0)  set_visiable(36,204,0)  set_visiable(37,204,0)  set_visiable(38,204,0)  set_visiable(39,204,0)
    set_visiable(35,203,1)  set_visiable(36,203,1)  set_visiable(37,203,1)  set_visiable(38,203,1)  set_visiable(39,203,1) 
- end
+  end
+--历史曲线统一设定
+function History()
+      set_value(STD8[8],107,STD8[7])
+      set_visiable(STD8[8],101,STD8[1])
+      set_visiable(STD8[8],102,STD8[2])
+      set_visiable(STD8[8],103,STD8[3])
+      set_visiable(STD8[8],104,STD8[4])
+      set_visiable(STD8[8],105,STD8[5])
+      set_visiable(STD8[8],106,STD8[6])
+      set_visiable(STD8[8],4,STD8[9])
+
+end
+
 end--Chapter 1 函数定义结束
 
 --Chapter 2 按键响应程序
@@ -554,7 +566,136 @@ end
 if screen == 1 then
    Cleanliness_select()
 end
+ 
+--2.9 历史曲线画面的图标控制
+if screen == 32 then
+   if get_text(32,301) == "含水量"or get_text(32,301) == "Water contect" then
+    STD8 = {1,0,0,0,0,0,0,32,0}
+    History()
+   elseif get_text(32,301) == "水活性"or get_text(32,301) == "Water saturation" then
+    STD8 = {0,1,0,0,0,0,1,32,0}
+    History()
+    elseif get_text(32,301) == "污染度"or get_text(32,301) == "Cleanliness" then
+    STD8 = {0,0,1,0,0,0,2,32,1}
+    History()
+    elseif get_text(32,301) == "粘度"or get_text(32,301) == "Viscosity" then
+    STD8 = {0,0,0,1,0,0,3,32,0}
+    History()
+    elseif get_text(32,301) == "介电常数"or get_text(32,301) == "Permittivity" then
+    STD8 = {0,0,0,0,1,0,4,32,0}
+    History()
+    elseif get_text(32,301) == "酸值"or get_text(32,301) == "Acid" then
+    STD8 = {0,0,0,0,0,1,5,32,0}
+    History()
+    elseif get_text(32,301) == "电阻率"or get_text(32,301) == "Resistivity" then
+     STD8 = {0,0,0,0,0,1,6,32,0}
+    History()
+    end
+end 
 
+if screen == 33 then
+   if get_text(33,301) == "含水量"or get_text(33,301) == "Water contect" then
+    STD8 = {1,0,0,0,0,0,0,33,0}
+    History()
+   elseif get_text(33,301) == "水活性"or get_text(33,301) == "Water saturation" then
+    STD8 = {0,1,0,0,0,0,1,33,0}
+    History()
+    elseif get_text(33,301) == "污染度"or get_text(33,301) == "Cleanliness" then
+    STD8 = {0,0,1,0,0,0,2,33,1}
+    History()
+    elseif get_text(33,301) == "粘度"or get_text(33,301) == "Viscosity" then
+    STD8 = {0,0,0,1,0,0,3,33,0}
+    History()
+    elseif get_text(33,301) == "介电常数"or get_text(33,301) == "Permittivity" then
+    STD8 = {0,0,0,0,1,0,4,33,0}
+    History()
+    elseif get_text(33,301) == "酸值"or get_text(33,301) == "Acid" then
+    STD8 = {0,0,0,0,0,1,5,33,0}
+    History()
+    elseif get_text(33,301) == "电阻率"or get_text(33,301) == "Resistivity" then
+     STD8 = {0,0,0,0,0,1,6,33,0}
+    History()
+    end
+end
+
+if screen == 34 then
+   if get_text(34,301) == "含水量"or get_text(34,301) == "Water contect" then
+    STD8 = {1,0,0,0,0,0,0,34,0}
+    History()
+   elseif get_text(34,301) == "水活性"or get_text(34,301) == "Water saturation" then
+    STD8 = {0,1,0,0,0,0,1,34,0}
+    History()
+    elseif get_text(34,301) == "污染度"or get_text(34,301) == "Cleanliness" then
+    STD8 = {0,0,1,0,0,0,2,34,1}
+    History()
+    elseif get_text(34,301) == "粘度"or get_text(34,301) == "Viscosity" then
+    STD8 = {0,0,0,1,0,0,3,34,0}
+    History()
+    elseif get_text(34,301) == "介电常数"or get_text(34,301) == "Permittivity" then
+    STD8 = {0,0,0,0,1,0,4,34,0}
+    History()
+    elseif get_text(34,301) == "酸值"or get_text(34,301) == "Acid" then
+    STD8 = {0,0,0,0,0,1,5,34,0}
+    History()
+    elseif get_text(34,301) == "电阻率"or get_text(34,301) == "Resistivity" then
+     STD8 = {0,0,0,0,0,1,6,34,0}
+    History()
+    end
+end
+--2.10快速选择当前模式
+if screen == 0 then
+    if get_value(0,141)==1 then
+       set_value(0,101,1)
+       set_value(0,102,0)
+       set_value(0,103,0)
+       set_value(0,104,1)
+    elseif get_value(0.142)==1 then
+       set_value(0,101,1)
+       set_value(0,102,2)
+       set_value(0,103,0)
+       set_value(0,104,1)
+    elseif get_value(0,143)==1 then
+       set_value(0,101,1)
+       set_value(0,102,1)
+       set_value(0,103,0)
+       set_value(0,104,1)
+    end
+end
+--2.11取样及滤油机权限
+if screen == 0 then
+   if get_text(0,105) == "on" then
+   set_visiable(12,19,0)
+   else
+   set_visiable(12,19,1)
+   end
+   
+   if get_text(0,106) == "on" then
+    if get_value(4,104) == 0 then
+        set_value(4,101,0)
+    elseif get_value(4,104) == 1 then
+        set_value(4,101,1)
+    elseif get_value(4,104) == 2 then
+        set_value(4,101,2)
+    elseif get_value(4,104) == 3 then
+        set_value(4,101,3)
+    elseif get_value(4,104) == 4 then
+        set_value(4,101,4)
+    end
+   else
+     if get_value(4,104) == 0 then
+        set_value(4,101,0)
+    elseif get_value(4,104) == 1 then
+        set_value(4,101,1)
+    elseif get_value(4,104) == 2 then
+        set_value(4,101,2)
+    elseif get_value(4,104) == 3 then
+        set_visiable(4,31,1)
+    elseif get_value(4,104) == 4 then
+        set_value(4,101,4)
+    end
+   end
+end
+   
 
 end --Chapter 2 按键响应程序结束
 
@@ -565,7 +706,7 @@ function on_init()
  read_byte_data = read_flash(4060,1)
  set_text(0,11,read_byte_data[0])
  language_change()  
---历史曲线弹窗设置为默认
+--弹窗设置为默认
    set_visiable(2,31,0)
    set_visiable(3,31,0)
    set_visiable(4,31,0)
@@ -575,6 +716,28 @@ function on_init()
    set_visiable(37,31,0)
    set_visiable(38,31,0)
    set_visiable(39,31,0)
+--历史曲线画面默认全部关闭
+   set_visiable(32,101,0)
+   set_visiable(32,102,0)
+   set_visiable(32,103,0)
+   set_visiable(32,104,0)
+   set_visiable(32,105,0)
+   set_visiable(32,106,0)
+   
+   set_visiable(33,101,0)
+   set_visiable(33,102,0)
+   set_visiable(33,103,0)
+   set_visiable(33,104,0)
+   set_visiable(33,105,0)
+   set_visiable(33,106,0)
+   
+   set_visiable(34,101,0)
+   set_visiable(34,102,0)
+   set_visiable(34,103,0)
+   set_visiable(34,104,0)
+   set_visiable(34,105,0)
+   set_visiable(34,106,0)
+
 --系统语言自动切换（报文发送）
  if get_text(41,3) == "简体中文" then
 			--EE C1 00 C1 FF FC FF FF 
@@ -606,6 +769,11 @@ function on_init()
  end --报文发送结束
    Cleanliness_select() 
 --上电时执行一下污染度标准选择，避免乱码，其实中英文选择也应该选一下，但懒得改。
+
+--3.2OEM屏蔽部分功能
+set_text(0,105,"OFF")
+set_text(0,106,"OFF")
+
 end --Chapter 3 上电执行程序结束
 
 --Chapter 4 每秒执行程序
@@ -696,7 +864,7 @@ if get_value(14,101) ~= 3 then
 set_visiable(14,105,0)	
 set_visiable(14,113,0)	
 end
-	
+
 --4.2ISO检测标准污染度数值更新
 --value NAS1638 == 0 GB/T14039 == 1 SAE AS4059G-2022(um) == 2 SAE AS4059G-2022(umc) == 3 ISO4406 == 4
 set_text(35,203,get_text(35,204))
